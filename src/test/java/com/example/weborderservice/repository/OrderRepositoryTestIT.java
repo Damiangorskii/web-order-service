@@ -1,0 +1,42 @@
+package com.example.weborderservice.repository;
+
+import com.example.weborderservice.model.CustomerInfo;
+import com.example.weborderservice.model.DeliveryInfo;
+import com.example.weborderservice.model.Order;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@DataMongoTest
+class OrderRepositoryTestIT {
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Test
+    void should_find_order_by_orderId() {
+        UUID orderId = UUID.randomUUID();
+        orderRepository.save(new Order(orderId, Collections.emptyList(), new CustomerInfo(), new DeliveryInfo(), false));
+
+        Optional<Order> foundOrder = orderRepository.findOrderByOrderId(orderId);
+        assertTrue(foundOrder.isPresent());
+        assertEquals(orderId, foundOrder.get().getOrderId());
+    }
+
+    @Test
+    void should_delete_order_by_orderId() {
+        UUID orderId = UUID.randomUUID();
+        orderRepository.save(new Order(orderId, Collections.emptyList(), new CustomerInfo(), new DeliveryInfo(), false));
+
+        orderRepository.deleteOrderByOrderId(orderId);
+
+        Optional<Order> foundOrder = orderRepository.findOrderByOrderId(orderId);
+        assertFalse(foundOrder.isPresent());
+    }
+}
