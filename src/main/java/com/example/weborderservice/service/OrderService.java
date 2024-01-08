@@ -15,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +36,8 @@ public class OrderService {
                 shoppingCart.getProducts(),
                 customerInfo,
                 deliveryInfo,
-                false
+                false,
+                LocalDateTime.now()
         );
         return orderRepository.save(order);
     }
@@ -60,12 +63,18 @@ public class OrderService {
     public List<Order> uploadProducts(final MultipartFile file) {
         try {
             byte[] bytes = file.getBytes();
-            List<Order> orders = objectMapper.readValue(bytes, new TypeReference<>() {});
-            orders.forEach(this::setOrderId);
+            List<Order> orders = objectMapper.readValue(bytes, new TypeReference<>() {
+            });
+            orders.forEach(this::setOrderIdAndInsertDateTime);
             return orderRepository.saveAll(orders);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error processing file", e);
         }
+    }
+
+    public void deleteOldOrders() {
+        LocalDateTime oneMinuteAgo = LocalDateTime.now(ZoneId.systemDefault()).minusMinutes(1);
+        orderRepository.deleteOrdersByInsertDateTimeBefore(oneMinuteAgo);
     }
 
     private void payForOrder(final Order order) {
@@ -74,7 +83,8 @@ public class OrderService {
         }
     }
 
-    private void setOrderId(final Order order) {
+    private void setOrderIdAndInsertDateTime(final Order order) {
         order.setOrderId(UUID.randomUUID());
+        order.setInsertDateTime(LocalDateTime.now());
     }
 }

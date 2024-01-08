@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,7 +23,7 @@ class OrderRepositoryTestIT {
     @Test
     void should_find_order_by_orderId() {
         UUID orderId = UUID.randomUUID();
-        orderRepository.save(new Order(orderId, Collections.emptyList(), new CustomerInfo(), new DeliveryInfo(), false));
+        orderRepository.save(new Order(orderId, Collections.emptyList(), new CustomerInfo(), new DeliveryInfo(), false, LocalDateTime.now()));
 
         Optional<Order> foundOrder = orderRepository.findOrderByOrderId(orderId);
         assertTrue(foundOrder.isPresent());
@@ -32,7 +33,7 @@ class OrderRepositoryTestIT {
     @Test
     void should_delete_order_by_orderId() {
         UUID orderId = UUID.randomUUID();
-        orderRepository.save(new Order(orderId, Collections.emptyList(), new CustomerInfo(), new DeliveryInfo(), false));
+        orderRepository.save(new Order(orderId, Collections.emptyList(), new CustomerInfo(), new DeliveryInfo(), false, LocalDateTime.now()));
 
         orderRepository.deleteOrderByOrderId(orderId);
 
